@@ -1,8 +1,7 @@
 {
   "plugins": [
     "@semantic-release/commit-analyzer",
-    "@semantic-release/release-notes-generator",
-    ["@semantic-release/github", {}]
+    "@semantic-release/release-notes-generator"
   ],
   "repositoryUrl": "git@github.com:cedricmoulard/poc-semantic-release.git"
 }
