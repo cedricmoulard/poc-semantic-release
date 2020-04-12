@@ -8,7 +8,8 @@ jobs:
     steps:
       - checkout
       - run: npm i
-      - run: npm run semantic-release
+      - run: npm run build
+      - run: node lib/index.js
 
 workflows:
   version: 2
