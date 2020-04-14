@@ -1,6 +1,6 @@
-import * as conventionalRecommendedBump from 'conventional-recommended-bump'
-import * as gitSemverTags from 'git-semver-tags'
-import * as semver from 'semver'
+import conventionalRecommendedBump from 'conventional-recommended-bump'
+import gitSemverTags from 'git-semver-tags'
+import semver from 'semver'
 import { Versions } from './versions.model';
 import { Observable, Observer } from 'rxjs';
 import { Configuration } from './configuration.model';
@@ -22,10 +22,10 @@ function getType(configuration: Configuration): Observable<string> {
     })
 }
 
-function extractVersions(type): Observable<Versions> {
+function extractVersions(type: string, configuration: Configuration): Observable<Versions> {
 
     return new Observable((observer: Observer<Versions>) => {
-        gitSemverTags(function (error, tags) {
+        gitSemverTags(configuration, function (error, tags) {
 
             if (!!error) {
                 observer.error(error)
@@ -34,8 +34,12 @@ function extractVersions(type): Observable<Versions> {
                 let lastVersion = '0.0.0'
                 let nextVersion = '1.0.0'
                 if (!!tags && tags.length > 0) {
-                    lastVersion = tags[0]
-                    nextVersion = semver.inc(tags[0], type)
+                    const regex = /^(.*)[1-9].*/gi;
+                    lastVersion = tags[0].replace(regex, function (tag, $1) {
+                        return tag.substring($1.length)
+                    })
+                    nextVersion = semver.clean(lastVersion, {loose: true})
+                    nextVersion = semver.inc(nextVersion, type)
                 }
 
                 const nextSnapshot = `${ semver.inc(nextVersion, 'minor') }-SNAPSHOT`
@@ -55,6 +59,6 @@ function extractVersions(type): Observable<Versions> {
 
 export function getVersions(configuration: Configuration): Observable<Versions> {
     return getType(configuration).pipe(
-        mergeMap(type => extractVersions(type))
+        mergeMap(type => extractVersions(type, configuration))
     )
 }
